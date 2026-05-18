@@ -1,0 +1,33 @@
+name: HKTVmall Price Cron Job
+
+on:
+  schedule:
+    # 這裡代表每週一早上 00:00 UTC (國際標準時間) = 香港時間週一早上 08:00
+    - cron: '0 0 * * 1'
+  workflow_dispatch: # 允許我們在網頁上手動點擊按鈕進行測試
+
+jobs:
+  scrape-and-send:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 複製倉庫代碼
+      uses: actions/checkout@v3
+
+    - name: 設定 Python 環境
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: 安裝自動化必備工具與瀏覽器
+      run: |
+        python -m pip install --upgrade pip
+        pip install playwright
+        playwright install chromium
+
+    - name: 執行 Python 爬蟲
+      env:
+        SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
+      run: python scraper.py
